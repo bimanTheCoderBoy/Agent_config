@@ -13,13 +13,18 @@ def sidebar():
         elif view == "🧵 Threads":
             handle_threads()
 
+def load_files():
+    if "files" not in st.session_state:
+        st.session_state.files = []
 
-def handle_file_upload():
-    
-    st.session_state.files = []
     response = requests.get(f"{API_URL}/get_files")
     if response.status_code == 200:
         st.session_state.files = response.json().get("files", [])
+    else:
+        st.error("❌ Failed to load files from the server.")    
+def handle_file_upload():
+
+    load_files()
 
     uploaded_file = st.file_uploader("Choose XML", type=["xml"])
     if uploaded_file:
@@ -29,7 +34,7 @@ def handle_file_upload():
         )
         if response.status_code == 200:
             st.success("✅ Uploaded!")
-            st.session_state.files.append(uploaded_file.name)
+            load_files()
         else:
             st.error("❌ Upload failed!")
 
