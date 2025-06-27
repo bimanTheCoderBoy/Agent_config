@@ -82,6 +82,7 @@ def init_thread(file_id: str) -> str:
     threads.append({
         "thread_id": thread_id,
         "file_id": file_id,
+        "file_name": metadata.get('file_name', 'Unknown'),
         "created_at": datetime.datetime.now().isoformat(),
       
     })

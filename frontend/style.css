@@ -1,0 +1,14 @@
+.topbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 50px;
+    background-color: #1e1e1e;
+    padding: 0 20px;
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+}
+.sidebar .block-container {
+    padding-top: 0;
+}
