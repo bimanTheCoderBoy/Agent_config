@@ -38,37 +38,39 @@ def init_thread(file_id: str) -> str:
             f"- Attribute keys: {', '.join(metadata['attribute_keys'])}\n"
             
             )
-    system_context = ChatPromptTemplate.from_messages(
-        [   
-            ("system", """You are a helpful assistant that helps users to analize and understand Network file XML files.\n 
-             do not answer questions that are not related to the file.
-             if any question is asked that is not related to the file,
-             you should respond with "I can only answer questions related to the file. Please ask a question related to the file."
-             you will be provided the file data and metadata.
-             """),
-            ("system", f"File ID: {file_id}"),
-            ("system", f"File content: {file_context}"),
-           
-           
-            
-        ]   
-    ).invoke(
-        file_id=file_id,
-        file_context=file_context,
-    )
+    system_context = SystemMessage(
+            content = f"""You are a helpful assistant that helps users to analyze and understand Network XML files.
+        Do not answer questions that are not related to the file.
+        If any unrelated question is asked, respond with:
+        "I can only answer questions related to the file. Please ask a question related to the file."
+
+        File ID: {file_id}
+
+        File content or metadata:
+        {file_context}
+        """
+        )
+
     print(system_context)
-    system_message = SystemMessage(content=system_context)
+    
 
     # 3. create initial GraphState
     initial_state = GraphState(
-        messages=[system_message]
+        id=str(uuid.uuid4()),
+        messages=[system_context]
     )
 
     # 4. generate thread_id
     thread_id = str(uuid.uuid4())
 
     # 5. store in the checkpointer
-    checkpointer.put(thread_id, initial_state)
+    config={
+        "configurable":{
+            "thread_id": thread_id,
+            "checkpoint_ns":""
+        }
+    }
+    checkpointer.put(config, initial_state.dict(), new_versions={}, metadata={})
 
     if os.path.exists(THREADS_REGISTRY_PATH):
         with open(THREADS_REGISTRY_PATH, "r") as f:

@@ -70,7 +70,7 @@ with st.sidebar:
         st.session_state.files = []
         response = requests.get("http://localhost:8000/api/v1/get_files")
         if response.status_code == 200:
-            st.session_state.files = [file["file_name"] for file in response.json().get("files", [])]
+            st.session_state.files = [file for file in response.json().get("files", [])]
         
     # # ---------------- Chat View ----------------
     # if view == "💬 Chat":
@@ -96,9 +96,22 @@ with st.sidebar:
             st.error("❌ Upload failed!")
 
     if st.session_state.files:
-            st.markdown("### 📄 Uploaded Files")
-            for f in st.session_state.files:
-                st.markdown(f"• {f}")    
+        st.markdown("### 📄 Uploaded Files")
+        for f in st.session_state.files:
+            with st.expander(f"📄 {f["file_name"]}"):
+                if st.button(f"➕ Create New Thread" , key=f"create_thread_{f["file_id"]}"):
+                    # call the backend to create a new thread
+                    response = requests.post(
+                        f"{API_URL}/init_thread/{f['file_id']}",
+                    )
+                    if response.status_code == 200:
+                        thread_id = response.json().get("thread_id")
+                        st.success(f"✅ Thread created! ID: {thread_id}")
+                        # you could store thread_id to a session state too
+                        st.session_state.current_thread = thread_id
+                    else:
+                        st.error("❌ Failed to create thread")
+   
 
 
 # ============ Chat Interface ============
