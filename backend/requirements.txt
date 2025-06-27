@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-pydantic
-python-multipart
-xmltodict
-langchain
-langgraph
-openai
-chromadb

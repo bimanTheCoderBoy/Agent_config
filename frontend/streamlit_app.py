@@ -68,7 +68,10 @@ with st.sidebar:
     #     st.session_state.threads = ["Default"]
     if "files" not in st.session_state:
         st.session_state.files = []
-
+        response = requests.get("http://localhost:8000/api/v1/get_files")
+        if response.status_code == 200:
+            st.session_state.files = [file["file_name"] for file in response.json().get("files", [])]
+        
     # # ---------------- Chat View ----------------
     # if view == "💬 Chat":
     #     st.subheader("💬 Chat Threads")
@@ -92,10 +95,10 @@ with st.sidebar:
         else:
             st.error("❌ Upload failed!")
 
-        if st.session_state.files:
+    if st.session_state.files:
             st.markdown("### 📄 Uploaded Files")
             for f in st.session_state.files:
-                st.markdown(f"• {f}")
+                st.markdown(f"• {f}")    
 
 
 # ============ Chat Interface ============
