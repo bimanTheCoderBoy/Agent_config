@@ -16,3 +16,6 @@ langchain-chroma
 sentence-transformers
 langgraph
 langgraph-checkpoint-sqlite
+langchain-groq
+python-dotenv
+aiosqlite

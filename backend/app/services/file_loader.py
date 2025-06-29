@@ -8,7 +8,7 @@ from langchain.text_splitter import RecursiveJsonSplitter
 from langchain.schema import Document
 import xmltodict
 from langchain_huggingface import HuggingFaceEmbeddings
-
+from app.graph.state import vectorstore
 UPLOAD_DIR = "app/storage/raw_files"
 METADATA_DIR = "app/storage/metadata"
 VECTOR_DB_DIR = "app/storage/vector_db"
@@ -107,17 +107,7 @@ async def load_and_store_to_vector_store(file: UploadFile, file_content, metadat
                 }
             )
             docs.append(doc)
-            
-        embeddings = HuggingFaceEmbeddings(
-            model_name=EMBEDDING_MODEL,
-            model_kwargs={"device":"cpu"}
-        )
         
-        # create vector store
-        vectorstore = Chroma(
-        persist_directory=VECTOR_DB_DIR,
-        embedding_function=embeddings
-        )
 
         vectorstore.add_documents(docs)
         
