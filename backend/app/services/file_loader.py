@@ -7,7 +7,7 @@ from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveJsonSplitter
 from langchain.schema import Document
 import xmltodict
-from langchain_huggingface import HuggingFaceEmbeddings
+
 from app.graph.state import vectorstore
 UPLOAD_DIR = "app/storage/raw_files"
 METADATA_DIR = "app/storage/metadata"

@@ -43,7 +43,7 @@ async def get_thread(thread_id: str):
         }
     }
     try:
-        state = checkpointer.get(config)
+        state =await checkpointer.aget(config)
         if state is None:
             return {"error": "Thread not found"}, 404
         return {"thread_id": thread_id, "state": state}
