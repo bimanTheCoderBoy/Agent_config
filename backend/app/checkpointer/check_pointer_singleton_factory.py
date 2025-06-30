@@ -2,7 +2,7 @@
 from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver    
 DB_PATH = "app/checkpointer/sqlite.db"
-DB_URI = "postgresql://postgres:root@localhost:5432/test"
+DB_URI = "postgresql://postgres:root@localhost:5432/postgres"
 class CheckpointerSingleton:
     
     instance = None

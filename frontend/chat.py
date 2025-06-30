@@ -27,13 +27,19 @@ def chat_area():
     question = st.chat_input("Ask something...")
     if question:
         st.session_state.messages.append({"role": "user", "content": question})
+        
         # Stream the response
-        answer_so_far = ""
-        placeholder = st.empty()
-        for chunk in stream_chat(question, st.session_state.current_thread_id or ""):
+        # answer_so_far = ""
+        # placeholder = st.empty()
+        # for chunk in stream_chat(question, st.session_state.current_thread_id or ""):
             
-            answer_so_far += chunk
-            placeholder.markdown(answer_so_far)
-        st.session_state.messages.append({"role": "assistant", "content": answer_so_far})
+        #     answer_so_far += chunk
+        #     placeholder.markdown(answer_so_far)
+        # st.session_state.messages.append({"role": "assistant", "content": answer_so_far})
+        url = f"{API_URL}/chat"
+    # Fire off the request as a stream
+        resp = requests.get(url, params={"query": question, "thread_id": st.session_state.current_thread_id})
+        data = resp.json()
+        st.session_state.messages.append({"role": data["type"], "content": data["content"]})
         st.rerun()
 
