@@ -17,7 +17,7 @@ async def chat(request: Request, query: str, thread_id: str):
     """
     async def event_generator():
         # Build your inputs and config for LangGraph
-        inputs = {"messages": [HumanMessage(content=query)]}
+        inputs = {"messages": [{"type":"human", "content":query}]}
         config = {"configurable": {"thread_id": thread_id}}
 
         try:

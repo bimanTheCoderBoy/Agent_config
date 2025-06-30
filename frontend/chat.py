@@ -9,22 +9,9 @@ def stream_chat(question, thread_id):
     url = f"{API_URL}/chat"
     # Fire off the request as a stream
     resp = requests.get(url, params={"query": question, "thread_id": thread_id}, stream=True)
-    client = sseclient.SSEClient(resp)
-    text = ""
-    for event in client.events():
-        if event.event == "error":
-            data = json.loads(event.data)
-            st.error(f"Error: {data.get('error')}")
-            break
-        elif event.event == "done":
-            break
-        else:
-            # parse token chunk
-            chunk = json.loads(event.data).get("token", "")
-            text += chunk
-            # update the last assistant message in place
-            st.chat_message("assistant", is_placeholder=True).markdown(text)
-    return text
+    for line in resp.iter_lines():
+        if line:
+            yield line.decode("utf-8")
 
 def chat_area():
     if "current_thread_id" not in st.session_state:
@@ -41,7 +28,12 @@ def chat_area():
     if question:
         st.session_state.messages.append({"role": "user", "content": question})
         # Stream the response
-        answer = stream_chat(question, st.session_state.current_thread_id or "")
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+        answer_so_far = ""
+        placeholder = st.empty()
+        for chunk in stream_chat(question, st.session_state.current_thread_id or ""):
+            
+            answer_so_far += chunk
+            placeholder.markdown(answer_so_far)
+        st.session_state.messages.append({"role": "assistant", "content": answer_so_far})
         st.rerun()
 
