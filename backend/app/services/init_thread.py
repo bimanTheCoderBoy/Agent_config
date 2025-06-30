@@ -6,14 +6,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from xml.etree import ElementTree as ET
 import xmltodict
 import json
-from app.graph.state import GraphState, checkpointer  
+from app.graph.state import GraphState  
 import datetime
+# from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
 
 METADATA_DIR = "app/storage/metadata"
 RAW_FILES_DIR="app/storage/raw_files"
 THREADS_REGISTRY_PATH = "app/storage/threads.json"
 
-def init_thread(file_id: str) -> str:
+async def init_thread(file_id: str) -> str:
     # 1. get the metadata
     metadata_path = os.path.join(METADATA_DIR, f"{file_id}.json")
     if not os.path.exists(metadata_path):
@@ -70,7 +71,13 @@ def init_thread(file_id: str) -> str:
             "checkpoint_ns":""
         }
     }
-    checkpointer.put(config, initial_state.dict(), new_versions={}, metadata={})
+    # checkpointer=CheckpointerSingleton.get()
+    import aiosqlite
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+    DB_PATH = "app/checkpointer/sqlite.db"
+    async with aiosqlite.connect(DB_PATH,check_same_thread=False) as sqlite_conn:
+                checkpointer = AsyncSqliteSaver(sqlite_conn)
+                await checkpointer.aput(config, initial_state.dict(), new_versions={}, metadata={})
 
     if os.path.exists(THREADS_REGISTRY_PATH):
         with open(THREADS_REGISTRY_PATH, "r") as f:
