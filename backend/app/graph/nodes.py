@@ -5,6 +5,7 @@ from app.graph.tools import retrieve_from_vectordb
 from app.graph.tools import llm_with_bind_tools
     
 def tools_router(state: GraphState):
+    print("reach router")
     last_message = state.messages[-1]
 
     if(hasattr(last_message, "tool_calls") and len(last_message.tool_calls) > 0):
@@ -13,6 +14,7 @@ def tools_router(state: GraphState):
         return END
 
 def llm_node(state:GraphState):
+    print("reach llm")
     message=llm_with_bind_tools.invoke(state.messages)
     return {
         "messages":[message]

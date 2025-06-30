@@ -18,14 +18,14 @@ async def chat(request: Request, query: str, thread_id: str):
             }
             config={
         "configurable":{
-            "thread_id": thread_id,
+            "thread_id": ";lk",
            
         }
     }
 
             try:
                 
-                async for event in graph.astream_events(input=inputs,config=config,version="v2"):
+                async for event in graph.astream(input=inputs,config=config, stream_mode="updates"):
                     print(event)
                     # if await request.is_disconnected():
                     #     break

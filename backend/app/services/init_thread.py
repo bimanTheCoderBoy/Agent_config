@@ -8,7 +8,7 @@ import xmltodict
 import json
 from app.graph.state import GraphState  
 import datetime
-from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
+from app.graph.build import compiled_startup_graph
 
 # from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
 
@@ -16,7 +16,7 @@ METADATA_DIR = "app/storage/metadata"
 RAW_FILES_DIR="app/storage/raw_files"
 THREADS_REGISTRY_PATH = "app/storage/threads.json"
 
-def init_thread(file_id: str) -> str:
+async def init_thread(file_id: str) -> str:
     # 1. get the metadata
     metadata_path = os.path.join(METADATA_DIR, f"{file_id}.json")
     if not os.path.exists(metadata_path):
@@ -73,19 +73,23 @@ def init_thread(file_id: str) -> str:
             "checkpoint_ns":""
         }
     }
-    # checkpointer=CheckpointerSingleton.get()
-    # checkpointer=CheckpointerSingleton.get()
-    checkpoint = {
-        "v": 1,
-        "ts": "2025-06-30T12:00:00+00:00",
-        "id": "chkpt-abc-123",
-        "channel_values": initial_state.dict(),
-        "channel_versions": {"__start__": 1, "foo": 1},
-        "versions_seen": {"__start__": {"__start__": 1}, "foo": {"__start__": 1}},
-        "pending_sends": [],
-    }
-    # await checkpointer.aput(config,checkpoint, new_versions={}, metadata={})
+#     checkpointer=CheckpointerSingleton.get()
+#     # checkpointer=CheckpointerSingleton.get()
+#     checkpoint = {
+#   "v": 1,
+#   "id": initial_state.id,
+#   "ts": datetime.datetime.utcnow().isoformat() + "Z",
+#   "channel_values": {
+#   },
+#   "channel_versions": {"count": 1, "messages": 1},
+#   "messages":initial_state.dict()["messages"],
+#   "versions_seen": {},
+#   "pending_sends": []
+# }
+#     test=  await checkpointer.aput(config,checkpoint, new_versions={}, metadata={})
+#     print(test)
 
+    await compiled_startup_graph.ainvoke(initial_state,config=config)
     if os.path.exists(THREADS_REGISTRY_PATH):
         with open(THREADS_REGISTRY_PATH, "r") as f:
             threads = json.load(f)

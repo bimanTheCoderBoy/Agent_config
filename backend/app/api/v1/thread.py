@@ -6,11 +6,11 @@ from app.checkpointer.check_pointer_singleton_factory import CheckpointerSinglet
 
 router = APIRouter()
 @router.post("/init_thread/{file_id}")
-def create_thread(file_id: str):
+async def create_thread(file_id: str):
     """
     Initialize a thread with the given file_id.
     """
-    thread_id = init_thread(file_id)
+    thread_id =await init_thread(file_id)
     return {"thread_id": thread_id, "message": "Thread initialized successfully"}
 
 #get all threads

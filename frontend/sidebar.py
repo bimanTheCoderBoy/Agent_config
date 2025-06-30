@@ -69,8 +69,9 @@ def handle_threads():
             if st.button(f"💬{thread['file_name']} with {thread['thread_id']}", key=f"thread_{thread['thread_id']}"):
                 response = requests.get(f"{API_URL}/get_thread/{thread['thread_id']}")
                 if response.status_code == 200:
-                    messages = response.json()["state"].get("messages", [])
+                    messages = response.json()["state"]["channel_values"].get("messages", [])
                     print(messages)
+                    messages= [ msg for msg in messages if msg["type"]!="system"] 
                     st.session_state.messages = [
                         {"role": msg["type"], "content": msg["content"]}
                         for msg in messages
