@@ -1,7 +1,8 @@
-import aiosqlite
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from psycopg_pool import AsyncConnectionPool
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver    
 DB_PATH = "app/checkpointer/sqlite.db"
+DB_URI = "postgresql://postgres:root@localhost:5432/test"
 class CheckpointerSingleton:
     
     instance = None
@@ -9,15 +10,16 @@ class CheckpointerSingleton:
     @classmethod
     async def initialize(cls):
         if cls.instance is None:
-            async with aiosqlite.connect(DB_PATH,check_same_thread=False) as sqlite_conn:
-                cls.instance = AsyncSqliteSaver(sqlite_conn)
+            pool = AsyncConnectionPool(conninfo=DB_URI, max_size=10)
+            async with pool.connection() as conn:
+              await  conn.set_autocommit(True)
+            saver=AsyncPostgresSaver(pool)
+            await saver.setup()
+            cls.instance=saver
 
     @classmethod
     def get(cls):
         if cls.instance is None:
             raise RuntimeError("Checkpointer not initialized yet")
         return cls.instance
-    @classmethod
-    async def close(cls):
-        if cls.instance is not None:
-           await cls.instance.conn.close()
+   

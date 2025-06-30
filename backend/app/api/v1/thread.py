@@ -2,15 +2,15 @@ from fastapi import APIRouter,Request
 import json
 from app.services.init_thread import init_thread
 # from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
-# from app.graph.state import checkpointer
+from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
 
 router = APIRouter()
 @router.post("/init_thread/{file_id}")
-async def create_thread(file_id: str):
+def create_thread(file_id: str):
     """
     Initialize a thread with the given file_id.
     """
-    thread_id =await init_thread(file_id)
+    thread_id = init_thread(file_id)
     return {"thread_id": thread_id, "message": "Thread initialized successfully"}
 
 #get all threads
@@ -43,17 +43,12 @@ async def get_thread(thread_id: str):
            
         }
     }
-    try:
-        # checkpointer=CheckpointerSingleton.get()
-        import aiosqlite
-        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-        DB_PATH = "app/checkpointer/sqlite.db"
-        async with aiosqlite.connect(DB_PATH,check_same_thread=False) as sqlite_conn:
-                    checkpointer = AsyncSqliteSaver(sqlite_conn)        
-                    state =await checkpointer.aget(config)
-                    if state is None:
-                        return {"error": "Thread not found"}, 404
-                    return {"thread_id": thread_id, "state": state}
+    try:   
+        checkpointer =CheckpointerSingleton.get()
+        state =await checkpointer.aget(config)
+        if state is None:
+            return {"error": "Thread not found"}, 404
+        return {"thread_id": thread_id, "state": state}
     except Exception as e:
         return {"error": str(e)}, 500
 

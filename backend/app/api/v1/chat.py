@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
-from app.graph.build import graph_setup
+from app.graph.build import compiled_graph as graph
 router = APIRouter()
 
 #route for chat stream response
@@ -24,7 +24,7 @@ async def chat(request: Request, query: str, thread_id: str):
     }
 
             try:
-                graph =await graph_setup()
+                
                 async for event in graph.astream_events(input=inputs,config=config,version="v2"):
                     print(event)
                     # if await request.is_disconnected():

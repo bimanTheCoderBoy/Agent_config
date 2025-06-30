@@ -8,13 +8,15 @@ import xmltodict
 import json
 from app.graph.state import GraphState  
 import datetime
+from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
+
 # from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
 
 METADATA_DIR = "app/storage/metadata"
 RAW_FILES_DIR="app/storage/raw_files"
 THREADS_REGISTRY_PATH = "app/storage/threads.json"
 
-async def init_thread(file_id: str) -> str:
+def init_thread(file_id: str) -> str:
     # 1. get the metadata
     metadata_path = os.path.join(METADATA_DIR, f"{file_id}.json")
     if not os.path.exists(metadata_path):
@@ -72,12 +74,17 @@ async def init_thread(file_id: str) -> str:
         }
     }
     # checkpointer=CheckpointerSingleton.get()
-    import aiosqlite
-    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-    DB_PATH = "app/checkpointer/sqlite.db"
-    async with aiosqlite.connect(DB_PATH,check_same_thread=False) as sqlite_conn:
-                checkpointer = AsyncSqliteSaver(sqlite_conn)
-                await checkpointer.aput(config, initial_state.dict(), new_versions={}, metadata={})
+    # checkpointer=CheckpointerSingleton.get()
+    checkpoint = {
+        "v": 1,
+        "ts": "2025-06-30T12:00:00+00:00",
+        "id": "chkpt-abc-123",
+        "channel_values": initial_state.dict(),
+        "channel_versions": {"__start__": 1, "foo": 1},
+        "versions_seen": {"__start__": {"__start__": 1}, "foo": {"__start__": 1}},
+        "pending_sends": [],
+    }
+    # await checkpointer.aput(config,checkpoint, new_versions={}, metadata={})
 
     if os.path.exists(THREADS_REGISTRY_PATH):
         with open(THREADS_REGISTRY_PATH, "r") as f:

@@ -1,0 +1,25 @@
+{
+    "file_id": "d115ca9d-e05f-4885-8d91-2e768f6d46c1",
+    "file_name": "01_Sample_Add_NR.xml",
+    "file_path": "app/storage/raw_files\\d115ca9d-e05f-4885-8d91-2e768f6d46c1.xml",
+    "file_type": null,
+    "size": 1329,
+    "root_tag": "{http://www.huawei.com/specs/SRAN}cmconfigdatafile",
+    "top_level_tags": [
+        "{http://www.huawei.com/specs/SRAN}fileheader",
+        "{http://www.huawei.com/specs/SRAN}subsession",
+        "{http://www.huawei.com/specs/SRAN}filefooter"
+    ],
+    "attribute_keys": [
+        "{http://www.w3.org/2001/XMLSchema-instance}type",
+        "datetime",
+        "neversion",
+        "productversion",
+        "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation",
+        "filetype",
+        "neid",
+        "netype",
+        "operation"
+    ],
+    "num_elements": 20
+}

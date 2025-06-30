@@ -19,3 +19,6 @@ langgraph-checkpoint-sqlite
 langchain-groq
 python-dotenv
 aiosqlite
+langgraph-checkpoint-postgres 
+asyncpg 
+psycopg[binary]

@@ -18,14 +18,13 @@ graph.add_edge(TOOL_NODE,LLM_NODE)
 graph.set_entry_point(LLM_NODE)
 
 #cmpiled graph noe it can be invokable
-import aiosqlite
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+# import aiosqlite
+# from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 DB_PATH = "app/checkpointer/sqlite.db"
-async def graph_setup():
-    async with aiosqlite.connect(DB_PATH,check_same_thread=False) as sqlite_conn:
-                checkpointer = AsyncSqliteSaver(sqlite_conn)
-                compiled_graph=graph.compile( checkpointer=checkpointer)
-                return compiled_graph
+
+checkpointer = CheckpointerSingleton.get()
+compiled_graph=graph.compile( checkpointer=checkpointer)
+                
 
 
 
