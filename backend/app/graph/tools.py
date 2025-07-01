@@ -11,7 +11,7 @@ def retrieve_from_vectordb(query:str, file_id:str):
         query (str): query for finding the similarity search
         file_id (str): file id of the file working on need for filtering the search
     """
-    docs= vectorstore.similarity_search(query=query,filter={"file_id":file_id}, k=2)
+    docs= vectorstore.similarity_search(query=query,filter={"file_id":file_id}, k=1)
     return "".join(f"chunk no {idx} content={doc.page_content} and metadata={doc.metadata}\n" for idx, doc in enumerate( docs))
 
 llm= ChatGroq(model="llama-3.1-8b-instant")

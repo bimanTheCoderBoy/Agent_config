@@ -70,19 +70,19 @@ async def llm_router(state:GraphState):
         updated_user_query=input+f"\n use tool call and your suggested queries are \n {resp.suggested_queries}"
         return Command(
             goto="LLM_NODE",
-            update={
-                "user_query":updated_user_query,
-                "messages":[HumanMessage(content=updated_user_query)]
-            }
+            # update={
+            #     "user_query":updated_user_query,
+            #     "messages":[HumanMessage(content=updated_user_query)]
+            # }
         )
     elif(resp.type=="normal"):
         print("going 03")
         return Command(
             goto="LLM_NODE",
-            update={
-                "user_query":resp.refined_query,
-                "messages":[HumanMessage(content=resp.refined_query)]
-            }
+            # update={
+            #     "user_query":resp.refined_query,
+            #     "messages":[HumanMessage(content=resp.refined_query)]
+            # }
         )
     
     
