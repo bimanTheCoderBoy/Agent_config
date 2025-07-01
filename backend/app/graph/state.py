@@ -5,9 +5,19 @@ from typing import Any, Dict, Optional, Annotated,List
 # from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-
-
+from pydantic import BaseModel
+from typing import Literal, List, Optional
 import operator
+
+#llm router schema
+class RoutingDecision(BaseModel):
+    type: Literal["retrieval", "normal"]
+    reason: Optional[str] = ""
+    suggested_queries: Optional[List[str]] = []
+    refined_query: Optional[str] = ""
+
+
+
 # import aiosqlite
 DB_PATH = "app/checkpointer/sqlite.db"
 VECTOR_DB_DIR = "app/storage/vector_db"
@@ -19,7 +29,10 @@ class GraphState(BaseModel):
     Represents the state of a graph.
     """
     id: str = Field(default_factory=lambda: "graph_state_1")
+    user_query:Optional[str]=None
+    file_id:Optional[str]=None
     messages:Annotated[List[BaseMessage], operator.add] = Field(default_factory=list)
+    is_startup:bool=False
 
 
 

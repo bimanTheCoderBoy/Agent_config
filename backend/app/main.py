@@ -21,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
 @app.on_event("startup")
 async def startup():
     await CheckpointerSingleton.initialize()
@@ -33,4 +34,6 @@ async def startup():
 
 # app.include_router(analysis.router, prefix="/api/v1")
 # app.include_router(qa.router, prefix="/api/v1")
- 
+@app.get("/")
+def test():
+    return {"data":"ok"}

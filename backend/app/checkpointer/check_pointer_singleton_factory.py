@@ -1,25 +1,34 @@
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.memory import MemorySaver
+import aiosqlite
+DB_PATH = "app/checkpointer/sqlite.db"  
 
-from psycopg_pool import AsyncConnectionPool
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver    
-DB_PATH = "app/checkpointer/sqlite.db"
-DB_URI = "postgresql://postgres:root@localhost:5432/postgres"
 class CheckpointerSingleton:
-    
-    instance = None
+    """
+    Singleton for AsyncSqliteSaver with proper async initialization.
+    """
+    _instance: AsyncSqliteSaver | None = None
 
     @classmethod
     async def initialize(cls):
-        if cls.instance is None:
-            pool = AsyncConnectionPool(conninfo=DB_URI, max_size=10)
-            async with pool.connection() as conn:
-              await  conn.set_autocommit(True)
-            saver=AsyncPostgresSaver(pool)
-            await saver.setup()
-            cls.instance=saver
+        """
+        Initializes the async SQLite checkpointer singleton if not already set up.
+        """
+        if cls._instance is None:
+            cls._instance=MemorySaver()
+            # Use from_conn_string for file-based or in-memory SQLite
+            # Example: ":memory:" for in-memory, or a file path for persistence
+            # async with aiosqlite.connect(DB_PATH,check_same_thread=False) as conn:
+                
+            #     cls._instance =AsyncSqliteSaver(conn=conn)
+            #     cls._instance=await cls._instance.setup()
 
     @classmethod
     def get(cls):
-        if cls.instance is None:
-            raise RuntimeError("Checkpointer not initialized yet")
-        return cls.instance
-   
+        """
+        Returns the initialized AsyncSqliteSaver singleton.
+        Raises if not yet initialized.
+        """
+        if cls._instance is None:
+            raise RuntimeError("Checkpointer not initialized yet. Call await CheckpointerSingleton.initialize() first.")
+        return cls._instance

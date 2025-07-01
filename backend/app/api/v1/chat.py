@@ -1,87 +1,70 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, Query
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import HumanMessage
-from langchain.schema import messages_to_dict
+from langchain_core.messages import HumanMessage, AIMessageChunk
 from app.graph.build import compiled_graph as graph
+from langchain.schema import message_to_dict
 import json
-import asyncio
 
 router = APIRouter()
 
+def serialize_ai_message_chunk(chunk):
+    if isinstance(chunk, AIMessageChunk):
+        return chunk.content
+    else:
+        raise TypeError(
+            f"Object of type {type(chunk).__name__} is not AIMessageChunk"
+        )
+
 @router.get("/chat")
-async def chat(request: Request, query: str, thread_id: str):
+async def chat(
+    request: Request,
+    query: str,
+    thread_id: str 
+):
     """
-    Streams back Server-Sent Events (SSE) for a LangGraph chat.
-    Query parameters:
-      - query: the user’s message
-      - thread_id: ID for LangGraph conversation state
+    SSE endpoint for chat streaming with vectorstore retrieval tool.
     """
-    # async def event_generator():
-    #     # Build your inputs and config for LangGraph
-    #     inputs = {"messages": [HumanMessage(content=query)]}
-    #     config = {"configurable": {"thread_id": thread_id}}
-
-    #     try:
-    #         # Iterate over LangGraph streaming events
-    #         async for event in graph.astream_events(input=inputs, config=config, version="v2"):
-    #             # If client has disconnected, stop producing events
-                
-    #             if await request.is_disconnected():
-    #                 print("Client disconnected, stopping event stream.")
-    #                 break
-
-    #             ev_type = event.get("event")
-    #             data = event.get("data", {})
-    #             print(data)
-    #             if ev_type == "on_chat_model_stream":
-    #                 # This event will carry incremental tokens
-    #                 token = data.get("delta", "")
-    #                 # SSE: just send the data payload
-    #                 yield f"data: {json.dumps({'token': token})}\n\n"
-
-    #             elif ev_type == "on_node_end":
-    #                 # This event signals that the node has completed
-    #                 yield "event: done\ndata: {}\n\n"
-
-    #             else:
-    #                 # For any other events, wrap generically
-    #                 try:
-    #                      serialized_data = json.dumps(data)
-    #                 except TypeError:
-    #                      serialized_data = json.dumps({"repr": str(data)})
-                        
-    #                 yield f"event: {ev_type}\ndata: {serialized_data}\n\n"
-                  
-
-    #         # When the generator finishes cleanly, send a final done event
-    #         yield "event: done\ndata: {}\n\n"
-
-    #     except Exception as e:
-    #         # On errors, send an SSE error event
-    #         err = {"error": str(e)}
-    #         yield f"event: error\ndata: {json.dumps(err)}\n\n"
-    #         print("Streaming error:", e)
-    inputs = {"messages": [HumanMessage(content=query)]}
-    config = {"configurable": {"thread_id": thread_id}}
-
-    # Invoke the graph
-    response = await graph.ainvoke(input=inputs, config=config)
-
-    # response is a dict with a 'messages' key
-    messages = response.get("messages", [])
-
-    if not messages:
-        raise HTTPException(status_code=500, detail="No messages returned by the graph.")
-
-    # get the last message
-    messages=messages_to_dict(messages)
-    last_message = messages[-1]
-    # print(response)
-    # print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
-    # print(last_message)
-    return  {
-            "content": last_message["data"]["content"],
-            "type": last_message["type"],
-            "tool_calls":last_message["data"]["tool_calls"]
+    # Include file_id in the initial human message so the model can pick up
+    # relevant context for retrieval
+    human_message = HumanMessage(
+        content=query,
+    )
+    inputs = {
+        "user_query":query,
+        "messages": [human_message],
         }
-    
+    config = {"configurable": {"thread_id": thread_id}}
+    # response=await graph.ainvoke(input=inputs,config=config)
+    async def generate_chat_events():
+        async for event in graph.astream_events(inputs, version="v2", config=config):
+            event_type = event["event"]
+            if event_type == "on_chat_model_stream":
+                chunk_content = serialize_ai_message_chunk(event["data"]["chunk"])
+                safe_content = chunk_content.replace("\n", "\\n").replace('"', '\\"')
+                yield f'data: {{"type": "content", "content": "{safe_content}"}}\n\n'
+
+            elif event_type == "on_chat_model_end":
+                # see if there is a tool call to the retriever
+                tool_calls = getattr(event["data"]["output"], "tool_calls", [])
+                retrieval_calls = [
+                    call for call in tool_calls if call["name"] == "retrieve_from_vectordb"
+                ]
+                if retrieval_calls:
+                    search_query = retrieval_calls[0]["args"].get("query", "")
+                    safe_query = search_query.replace("\n", "\\n").replace('"', '\\"')
+                    yield f'data: {{"type": "retrieval_start", "query": "{safe_query}"}}\n\n'
+
+            elif event_type == "on_tool_end" and event.get("name") == "retrieve_from_vectordb":
+                output = event["data"]["output"]
+                print("\n\n\n tool output"+output.content)
+                safe_content = json.dumps(output.content)
+                yield f'data: {{"type": "retrieval_result", "content": {safe_content}}}\n\n'
+
+        yield 'data: {"type": "end"}\n\n'
+
+    return StreamingResponse(
+        generate_chat_events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache"}
+    )
+    # return response

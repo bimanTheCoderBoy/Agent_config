@@ -1,0 +1,24 @@
+{
+    "file_id": "a60e6100-ca89-4586-b232-5f01fb6a2c73",
+    "file_name": "BTS_3900_5G_NR.xml",
+    "file_path": "app/storage/raw_files\\a60e6100-ca89-4586-b232-5f01fb6a2c73.xml",
+    "file_type": null,
+    "size": 154057,
+    "root_tag": "{http://www.huawei.com/specs/SRAN}cmconfigdatafile",
+    "top_level_tags": [
+        "{http://www.huawei.com/specs/SRAN}fileheader",
+        "{http://www.huawei.com/specs/SRAN}subsession",
+        "{http://www.huawei.com/specs/SRAN}filefooter"
+    ],
+    "attribute_keys": [
+        "{http://www.w3.org/2001/XMLSchema-instance}type",
+        "neversion",
+        "netype",
+        "neid",
+        "datetime",
+        "productversion",
+        "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation",
+        "filetype"
+    ],
+    "num_elements": 4253
+}

@@ -5,12 +5,14 @@ from app.services.init_thread import init_thread
 from app.checkpointer.check_pointer_singleton_factory import CheckpointerSingleton
 
 router = APIRouter()
-@router.post("/init_thread/{file_id}")
+@router.post("/init_thread")
 async def create_thread(file_id: str):
     """
     Initialize a thread with the given file_id.
     """
+    print(file_id)
     thread_id =await init_thread(file_id)
+    print(thread_id)
     return {"thread_id": thread_id, "message": "Thread initialized successfully"}
 
 #get all threads
@@ -46,6 +48,7 @@ async def get_thread(thread_id: str):
     try:   
         checkpointer =CheckpointerSingleton.get()
         state =await checkpointer.aget(config)
+        
         if state is None:
             return {"error": "Thread not found"}, 404
         return {"thread_id": thread_id, "state": state}
